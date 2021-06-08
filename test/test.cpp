@@ -8,6 +8,7 @@ int main()
 {
     LinearMPC linearMpc;
     linearMpc.reset();
+    linearMpc.outputAllDataToFile("data.txt");
 
     return 0;
 }

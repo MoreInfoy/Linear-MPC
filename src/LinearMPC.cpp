@@ -249,6 +249,30 @@ real_t LinearMPC::getCost() {
     }
 }
 
+void LinearMPC::outputAllDataToFile(string file_name) {
+    ofstream outfile(file_name);
+    if (!outfile.is_open()) {
+        throw std::runtime_error("[LinearMPC::outputAllDataToFile] The file can not be opened");
+    }
+    outfile << "-----------------------H------------------------" << endl
+            << H << endl
+            << "-----------------------g------------------------" << endl
+            << g.transpose() << endl
+            << "-----------------------C------------------------" << endl
+            << C << endl
+            << "-----------------------c_lb------------------------" << endl
+            << clb.transpose() << endl
+            << "-----------------------c_ub------------------------" << endl
+            << cub.transpose() << endl
+            << "-----------------------lb------------------------" << endl
+            << lb.transpose() << endl
+            << "-----------------------ub------------------------" << endl
+            << ub.transpose() << endl
+            << "-----------------------sol------------------------" << endl
+            << sol.transpose() << endl;
+    outfile.close();
+}
+
 
 
 

@@ -1,1 +1,1 @@
-# LInear-MPC
+# Linear-MPC

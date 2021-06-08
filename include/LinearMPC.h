@@ -7,6 +7,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "qpOASES.hpp"
 #include "MatrixDefinition.h"
@@ -48,6 +49,8 @@ public:
     Vec getOptimalTraj();
 
     real_t getCost();
+
+    void outputAllDataToFile(string file_name);
 
 private:
     QProblem solver;
