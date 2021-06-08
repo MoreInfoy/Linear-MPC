@@ -45,6 +45,6 @@
 #define UC_ROWS 0
 #endif
 
-#define HORIZON 250
+#define HORIZON 120
 
 #endif //LINEAR_MPC_CONFIG_H

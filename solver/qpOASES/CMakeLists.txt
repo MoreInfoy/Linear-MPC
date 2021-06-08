@@ -29,7 +29,7 @@
 ##     Date:      2007-2017
 ##
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 
 PROJECT(qpOASES CXX)
 SET(PACKAGE_NAME "qpOASES")
@@ -90,6 +90,12 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/casadi")
+
+set(CMAKE_CXX_STANDARD 14)
+set(BUILD_TYPE_RELEASE TRUE)
+
+set(CMAKE_CXX_FLAGS "-O3 -no-pie -march=native -ggdb -fPIC")
+set(CMAKE_C_FLAGS "-O3 -fPIC -ggdb  -march=native -std=gnu99 -I.")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH

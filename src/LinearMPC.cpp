@@ -67,6 +67,7 @@ void LinearMPC::reset() {
     x0.setZero();
 
     Options opt;
+    opt.printLevel = PL_NONE;
     opt.setToMPC();
     opt.enableEqualities = BT_TRUE;
     solver.setOptions(opt);
@@ -184,11 +185,15 @@ void LinearMPC::solve() {
     H = R + Su.transpose() * Q * Su;
     g = Su.transpose() * Q * Sx * x0 - Su.transpose() * Q * x_ref;
 
+#ifdef DISPLAY_TIME
+    real_t st = timer.getMs();
+#endif
     int_t nWSR = 1000;
     solver.reset();
     Options opt;
     opt.setToMPC();
     opt.enableEqualities = BT_TRUE;
+    opt.printLevel = PL_NONE;
     solver.setOptions(opt);
     solver.init(H.data(), g.data(), C.data(), lb.data(), ub.data(), clb.data(), cub.data(), nWSR);
     if (solver.isSolved()) {
@@ -196,15 +201,20 @@ void LinearMPC::solve() {
     } else {
         throw std::runtime_error("qp solver failed");
     }
+#ifdef DISPLAY_TIME
+    real_t et = timer.getMs();
+    printf("solving time: %f\n", et - st);
+#endif
 
 }
 
 void LinearMPC::computeSxSu() {
     for (int k = 0; k < HORIZON; k++) {
-        Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k];
         if (k == 0) {
+            Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k];
             Su.topLeftCorner<Ak_ROWS, Bk_COLS>() = Bk_vec[k];
         } else {
+            Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k] * Sx.middleRows((k-1) * Ak_ROWS, Ak_ROWS);
             Su.block(k * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS)
                     = Ak_vec[k] * (Su.block((k - 1) * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS));
             Su.block<Ak_ROWS, Bk_COLS>(k * Ak_ROWS, k * Bk_COLS) = Bk_vec[k];

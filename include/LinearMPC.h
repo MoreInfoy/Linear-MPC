@@ -11,6 +11,9 @@
 #include <vector>
 #include "qpOASES.hpp"
 #include "MatrixDefinition.h"
+#include "Timer.h"
+
+#define DISPLAY_TIME
 
 using namespace std;
 using namespace qpOASES;
@@ -82,6 +85,10 @@ private:
     void computelbub();
 
     void computeQR();
+
+#ifdef DISPLAY_TIME
+    Timer timer;
+#endif
 };
 
 
