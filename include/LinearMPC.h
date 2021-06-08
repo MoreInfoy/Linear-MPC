@@ -45,6 +45,10 @@ public:
 
     ConstVecRef getSolution();
 
+    Vec getOptimalTraj();
+
+    real_t getCost();
+
 private:
     QProblem solver;
     Mat_Ak Ak_vec[HORIZON];
@@ -58,10 +62,20 @@ private:
     Mat_Qx Qx_vec[HORIZON];
     Mat_Ru Ru_vec[HORIZON];
 
-    Vec g, c, lb, ub, sol, x0, x_ref;
-    Mat_H H, C;
+    Vec g, c, bx, bu, lb, ub, sol, x0, x_ref;
+    Mat_qp H, C, Sx, Su, Cx, Cu, Q, R;
 
     void solve();
+
+    void computeSxSu();
+
+    void computeCxbx();
+
+    void computeCubu();
+
+    void computelbub();
+
+    void computeQR();
 };
 
 

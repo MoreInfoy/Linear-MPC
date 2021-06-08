@@ -5,7 +5,7 @@
 #include "LinearMPC.h"
 
 LinearMPC::LinearMPC() : solver(Bk_COLS * HORIZON,
-                                SC_ROWS + UC_ROWS, HST_SEMIDEF) {
+                                (SC_ROWS + UC_ROWS) * HORIZON, HST_SEMIDEF) {
     reset();
 }
 
@@ -21,14 +21,42 @@ void LinearMPC::reset() {
         ub_vec[i].setZero();
         Qx_vec[i].setZero();
         Ru_vec[i].setZero();
-        H.resize(Bk_COLS * HORIZON, Bk_COLS * HORIZON);
-        C.resize(SC_ROWS + UC_ROWS, Bk_COLS * HORIZON);
-        c.resize(SC_ROWS + UC_ROWS);
-        lb.resize(Bk_COLS * HORIZON);
-        ub.resize(Bk_COLS * HORIZON);
-        g.resize(Bk_COLS * HORIZON);
-        sol.resize(Bk_COLS * HORIZON);
     }
+    H.resize(Bk_COLS * HORIZON, Bk_COLS * HORIZON);
+    H.setZero();
+    C.resize((SC_ROWS + UC_ROWS) * HORIZON, Bk_COLS * HORIZON);
+    C.setZero();
+    Sx.resize(Ak_ROWS * HORIZON, Ak_ROWS);
+    Sx.setZero();
+    Su.resize(Ak_ROWS * HORIZON, Bk_COLS * HORIZON);
+    Su.setZero();
+    Cx.resize(SC_ROWS * HORIZON, Ak_ROWS * HORIZON);
+    Cx.setZero();
+    bx.resize(SC_ROWS * HORIZON);
+    bx.setZero();
+    Cu.resize(UC_ROWS * HORIZON, Bk_COLS * HORIZON);
+    Cu.setZero();
+    bu.resize(Bk_COLS * HORIZON);
+    bu.setZero();
+    c.resize((SC_ROWS + UC_ROWS) * HORIZON + UC_ROWS);
+    c.setZero();
+    lb.resize(Bk_COLS * HORIZON);
+    lb.setZero();
+    ub.resize(Bk_COLS * HORIZON);
+    ub.setZero();
+    Q.resize(Ak_ROWS * HORIZON, Ak_ROWS * HORIZON);
+    Q.setZero();
+    R.resize(Bk_COLS * HORIZON, Bk_COLS * HORIZON);
+    R.setZero();
+    g.resize(Bk_COLS * HORIZON);
+    g.setZero();
+    sol.resize(Bk_COLS * HORIZON);
+    sol.setZero();
+
+    x_ref.resize(Ak_ROWS * HORIZON);
+    x_ref.setZero();
+    x0.resize(Ak_ROWS);
+    x0.setZero();
 
     Options opt;
     opt.setToMPC();
@@ -126,15 +154,84 @@ ConstVecRef LinearMPC::getSolution() {
 
 void LinearMPC::solve() {
     /* add formulation process */
+    computeSxSu();
+    computeCxbx();
+    computeCubu();
+    computelbub();
+    computeQR();
+
+    C.topRows(SC_ROWS * HORIZON).noalias() = Cx * Su;
+    C.bottomRows(UC_ROWS * HORIZON) = Cu;
+
+    c.head(SC_ROWS * HORIZON) = bx - Cx * Sx * x0;
+    c.tail(UC_ROWS * HORIZON) = bu;
+
+    H = R + Su.transpose() * Q * Su;
+    g = Su.transpose() * Q * Sx * x0 - Su.transpose() * Q * x_ref;
 
     int_t nWSR = 1000;
-    solver.init(H.data(), g.data(), C.data(), lb.data(), ub.data(), c.data(), NULL, nWSR);
-    if(solver.getPrimalSolution(sol.data()) != SUCCESSFUL_RETURN)
-    {
+    solver.init(H.data(), g.data(), C.data(), lb.data(), ub.data(), NULL, c.data(), nWSR);
+    if (solver.isSolved()) {
+        solver.getPrimalSolution(sol.data());
+    } else {
         throw std::runtime_error("qp solver failed");
     }
 
 }
+
+void LinearMPC::computeSxSu() {
+    for (int k = 0; k < HORIZON; k++) {
+        Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k];
+        if (k == 0) {
+            Su.topLeftCorner<Ak_ROWS, Bk_COLS>() = Bk_vec[k];
+        } else {
+            Su.block(k * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS)
+                    = Ak_vec[k] * (Su.block((k - 1) * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS));
+            Su.block<Ak_ROWS, Bk_COLS>(k * Ak_ROWS, k * Bk_COLS) = Bk_vec[k];
+        }
+    }
+}
+
+void LinearMPC::computeCxbx() {
+    for (int k = 0; k < HORIZON; k++) {
+        Cx.block<SC_ROWS, Ak_ROWS>(k * SC_ROWS, k * Ak_ROWS) = Ccx_vec[k];
+        bx.block<SC_ROWS, 1>(k * SC_ROWS, 0) = bcx_vec[k];
+    }
+}
+
+void LinearMPC::computeCubu() {
+    for (int k = 0; k < HORIZON; k++) {
+        Cu.block<UC_ROWS, Bk_COLS>(k * UC_ROWS, k * Bk_COLS) = Ccu_vec[k];
+        bu.block<UC_ROWS, 1>(k * UC_ROWS, 0) = bcu_vec[k];
+    }
+}
+
+void LinearMPC::computelbub() {
+    for (int k = 0; k < HORIZON; k++) {
+        lb.block<Bk_COLS, 1>(k * Bk_COLS, 0) = lb_vec[k];
+        ub.block<Bk_COLS, 1>(k * Bk_COLS, 0) = ub_vec[k];
+    }
+}
+
+void LinearMPC::computeQR() {
+    for (int k = 0; k < HORIZON; k++) {
+        Q.block<Ak_ROWS, Ak_ROWS>(k * Ak_ROWS, k * Ak_ROWS) = Qx_vec[k];
+        R.block<Bk_COLS, Bk_COLS>(k * Bk_COLS, k * Bk_COLS) = Ru_vec[k];
+    }
+}
+
+Vec LinearMPC::getOptimalTraj() {
+    return Sx * x0 + Su * sol;
+}
+
+real_t LinearMPC::getCost() {
+    if (solver.isSolved()) {
+        return solver.getObjVal();
+    } else {
+        throw std::runtime_error("qp solver failed, cost can not be obtained");
+    }
+}
+
 
 
 

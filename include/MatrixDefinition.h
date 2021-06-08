@@ -15,7 +15,7 @@ using Vec = typename Eigen::Matrix<real_t, Dynamic, 1>;
 
 using Mat = typename Eigen::Matrix<real_t, Dynamic, Dynamic>;
 
-using Mat_H = typename Eigen::Matrix<real_t, Dynamic, Dynamic, RowMajor>;
+using Mat_qp = typename Eigen::Matrix<real_t, Dynamic, Dynamic, RowMajor>;
 
 using Mat_Ak = typename Eigen::Matrix<real_t, Ak_ROWS, Ak_ROWS>;
 using Mat_Bk = typename Eigen::Matrix<real_t, Ak_ROWS, Bk_COLS>;
