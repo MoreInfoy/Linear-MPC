@@ -7,13 +7,13 @@
 
 #define real_t double
 
-#define Ak_ROWS 12
-#define Bk_COLS 12
+#define Ak_ROWS 2
+#define Bk_COLS 1
 
 #define WITH_STATE_CONSTRAINTS
 
 #ifdef WITH_STATE_CONSTRAINTS
-#define SC_ROWS 12
+#define SC_ROWS 1
 #else
 #define SC_ROWS 0
 #endif
@@ -40,11 +40,11 @@
 #define WITH_INPUT_CONSTRAINTS
 
 #ifdef WITH_INPUT_CONSTRAINTS
-#define UC_ROWS 12
+#define UC_ROWS 1
 #else
 #define UC_ROWS 0
 #endif
 
-#define HORIZON 12
+#define HORIZON 250
 
 #endif //LINEAR_MPC_CONFIG_H

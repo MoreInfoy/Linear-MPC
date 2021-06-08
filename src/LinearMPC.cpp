@@ -40,13 +40,13 @@ void LinearMPC::reset() {
     ubx.setZero();
     Cu.resize(UC_ROWS * HORIZON, Bk_COLS * HORIZON);
     Cu.setZero();
-    lbu.resize(Bk_COLS * HORIZON);
+    lbu.resize(UC_ROWS * HORIZON);
     lbu.setZero();
-    ubu.resize(Bk_COLS * HORIZON);
+    ubu.resize(UC_ROWS * HORIZON);
     ubu.setZero();
-    clb.resize((SC_ROWS + UC_ROWS) * HORIZON + UC_ROWS);
+    clb.resize((SC_ROWS + UC_ROWS) * HORIZON);
     clb.setZero();
-    cub.resize((SC_ROWS + UC_ROWS) * HORIZON + UC_ROWS);
+    cub.resize((SC_ROWS + UC_ROWS) * HORIZON);
     cub.setZero();
     lb.resize(Bk_COLS * HORIZON);
     lb.setZero();
@@ -75,7 +75,7 @@ void LinearMPC::reset() {
 void LinearMPC::setAkBk(Ref<Mat_Ak> Ak, Ref<Mat_Bk> Bk) {
     for (size_t i = 0; i < HORIZON; i++) {
         Ak_vec[i] = Ak;
-        Bk_vec[i] = Ak;
+        Bk_vec[i] = Bk;
     }
 }
 
@@ -86,7 +86,7 @@ void LinearMPC::setAkBk(Ref<Mat_Ak> Ak, Ref<Mat_Bk> Bk, size_t k) {
     }
 
     Ak_vec[k] = Ak;
-    Bk_vec[k] = Ak;
+    Bk_vec[k] = Bk;
 }
 
 void LinearMPC::setStateConstraints(Ref<Mat_Ccx> Ccx, Ref<Vec_bcx> lbcx, Ref<Vec_bcx> ubcx) {
@@ -185,6 +185,11 @@ void LinearMPC::solve() {
     g = Su.transpose() * Q * Sx * x0 - Su.transpose() * Q * x_ref;
 
     int_t nWSR = 1000;
+    solver.reset();
+    Options opt;
+    opt.setToMPC();
+    opt.enableEqualities = BT_TRUE;
+    solver.setOptions(opt);
     solver.init(H.data(), g.data(), C.data(), lb.data(), ub.data(), clb.data(), cub.data(), nWSR);
     if (solver.isSolved()) {
         solver.getPrimalSolution(sol.data());
@@ -269,7 +274,9 @@ void LinearMPC::outputAllDataToFile(string file_name) {
             << "-----------------------ub------------------------" << endl
             << ub.transpose() << endl
             << "-----------------------sol------------------------" << endl
-            << sol.transpose() << endl;
+            << sol.transpose() << endl
+            << "-----------------------optimal trajectory----------------------" << endl
+            << (Sx * x0 + Su * sol).transpose() << endl;
     outfile.close();
 }
 

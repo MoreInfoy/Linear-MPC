@@ -48,6 +48,22 @@ using Vec_bcy = typename Eigen::Matrix<real_t, OC_ROWS, 1, RowMajor>;
     using Vec_U_Bounds = typename Eigen::Matrix<real_t, Bk_COLS, 1>;
 #endif
 
+    namespace Poplar {
+        using Mat_H = typename Eigen::Matrix<real_t, Bk_COLS * HORIZON, Bk_COLS * HORIZON, RowMajor>;
+        using Vec_g = typename Eigen::Matrix<real_t, Bk_COLS * HORIZON, 1>;
+        using Mat_C = typename Eigen::Matrix<real_t, (SC_ROWS + UC_ROWS) * HORIZON, Bk_COLS * HORIZON, RowMajor>;
+        using Mat_Sx = typename Eigen::Matrix<real_t, Ak_ROWS * HORIZON, Ak_ROWS, RowMajor>;
+        using Mat_Su = typename Eigen::Matrix<real_t, Ak_ROWS * HORIZON, Bk_COLS * HORIZON, RowMajor>;
+        using Mat_Cx = typename Eigen::Matrix<real_t, SC_ROWS * HORIZON, Ak_ROWS * HORIZON, RowMajor>;
+        using Mat_Cu = typename Eigen::Matrix<real_t, UC_ROWS * HORIZON, Bk_COLS * HORIZON, RowMajor>;
+        using Mat_Q = typename Eigen::Matrix<real_t, Ak_ROWS * HORIZON, Ak_ROWS * HORIZON, RowMajor>;
+        using Mat_R = typename Eigen::Matrix<real_t, Bk_COLS * HORIZON, Bk_COLS * HORIZON, RowMajor>;
+        using Vec_cxbound = typename Eigen::Matrix<real_t, SC_ROWS * HORIZON, 1>;
+        using Vec_cubound = typename Eigen::Matrix<real_t, UC_ROWS * HORIZON, 1>;
+        using Vec_uLimit = typename Eigen::Matrix<real_t, Bk_COLS * HORIZON, 1>;
+        using Vec_cin = typename Eigen::Matrix<real_t, (SC_ROWS + UC_ROWS) * HORIZON, 1>;
+    }
+
     typedef const Eigen::Ref<const Vec> ConstVecRef;
 
     typedef const Eigen::Ref<const Mat> ConstMatRef;

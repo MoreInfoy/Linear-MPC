@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace qpOASES;
+using namespace MPC;
 
 class LinearMPC {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
