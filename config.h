@@ -10,7 +10,7 @@
 #define Ak_ROWS 2
 #define Bk_COLS 1
 
-#define WITH_STATE_CONSTRAINTS
+//#define WITH_STATE_CONSTRAINTS
 
 #ifdef WITH_STATE_CONSTRAINTS
 #define SC_ROWS 1
@@ -35,9 +35,9 @@
 //#define OC_ROWS 0
 //#endif
 
-#define WITH_INPUT_BOUNDS
+//#define WITH_INPUT_BOUNDS
 
-#define WITH_INPUT_CONSTRAINTS
+//#define WITH_INPUT_CONSTRAINTS
 
 #ifdef WITH_INPUT_CONSTRAINTS
 #define UC_ROWS 1

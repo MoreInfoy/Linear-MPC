@@ -30,17 +30,29 @@ public:
 
     void setAkBk(Ref<Mat_Ak> Ak, Ref<Mat_Bk> Bk, size_t k);
 
+#ifdef WITH_STATE_CONSTRAINTS
+
     void setStateConstraints(Ref<Mat_Ccx> Ccx, Ref<Vec_bcx> lbcx, Ref<Vec_bcx> ubcx);
 
     void setStateConstraints(Ref<Mat_Ccx> Ccx, Ref<Vec_bcx> lbcx, Ref<Vec_bcx> ubcx, size_t k);
+
+#endif
+
+#ifdef WITH_INPUT_CONSTRAINTS
 
     void setInputConstraints(Ref<Mat_Ccu> Ccu, Ref<Vec_bcu> lbcu, Ref<Vec_bcu> ubcu);
 
     void setInputConstraints(Ref<Mat_Ccu> Ccu, Ref<Vec_bcu> lbcu, Ref<Vec_bcu> ubcu, size_t k);
 
+#endif
+
+#ifdef WITH_INPUT_BOUNDS
+
     void setInputBounds(Ref<Vec_U_Bounds> lb, Ref<Vec_U_Bounds> ub);
 
     void setInputBounds(Ref<Vec_U_Bounds> lb, Ref<Vec_U_Bounds> ub, size_t k);
+
+#endif
 
     void setWeightMatrix(Ref<Mat_Qx> Qx, Ref<Mat_Ru> Ru);
 

@@ -15,24 +15,24 @@ int main() {
     Bk << 0.0012, 0.0494;
     linearMpc.setAkBk(Ak, Bk);
 
-    MPC::Mat_Ccx Ccx;
-    Ccx << 1.0, 0;
-    MPC::Vec_bcx cxlb, cxub;
-    cxlb << -3.0;
-    cxub << 3.0;
-    linearMpc.setStateConstraints(Ccx, cxlb, cxub);
+//    MPC::Mat_Ccx Ccx;
+//    Ccx << 1.0, 0;
+//    MPC::Vec_bcx cxlb, cxub;
+//    cxlb << -3.0;
+//    cxub << 3.0;
+//    linearMpc.setStateConstraints(Ccx, cxlb, cxub);
 
-    MPC::Mat_Ccu Ccu;
-    Ccu << 0.5;
-    MPC::Vec_bcu culb, cuub;
-    culb << -3.0;
-    cuub << 3.0;
-    linearMpc.setInputConstraints(Ccu, culb, cuub);
+//    MPC::Mat_Ccu Ccu;
+//    Ccu << 0.5;
+//    MPC::Vec_bcu culb, cuub;
+//    culb << -3.0;
+//    cuub << 3.0;
+//    linearMpc.setInputConstraints(Ccu, culb, cuub);
 
-    MPC::Vec_U_Bounds lb, ub;
-    lb << -5.5;
-    ub << 4.6;
-    linearMpc.setInputBounds(lb, ub);
+//    MPC::Vec_U_Bounds lb, ub;
+//    lb << -5.5;
+//    ub << 4.6;
+//    linearMpc.setInputBounds(lb, ub);
 
     MPC::Mat_Qx Q;
     Q << 1000.0, 0, 0, 10.0;
@@ -45,7 +45,7 @@ int main() {
     x0 << 2.0, 0.0;
     x_ref.resize(HORIZON * Ak_ROWS);
     x_ref.setZero();
-    for (int i = 0; i < HORIZON; i++) {
+    for (int i = 0; i < 2 * HORIZON; i++) {
         if(i%2==0)
         {
             x_ref(i) = -2.0;

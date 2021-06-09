@@ -48,10 +48,17 @@ void LinearMPC::reset() {
     clb.setZero();
     cub.resize((SC_ROWS + UC_ROWS) * HORIZON);
     cub.setZero();
+#ifdef WITH_INPUT_BOUNDS
     lb.resize(Bk_COLS * HORIZON);
     lb.setZero();
     ub.resize(Bk_COLS * HORIZON);
     ub.setZero();
+#else
+    lb.resize(0);
+    lb.setZero();
+    ub.resize(0);
+    ub.setZero();
+#endif
     Q.resize(Ak_ROWS * HORIZON, Ak_ROWS * HORIZON);
     Q.setZero();
     R.resize(Bk_COLS * HORIZON, Bk_COLS * HORIZON);
@@ -90,6 +97,8 @@ void LinearMPC::setAkBk(Ref<Mat_Ak> Ak, Ref<Mat_Bk> Bk, size_t k) {
     Bk_vec[k] = Bk;
 }
 
+#ifdef WITH_STATE_CONSTRAINTS
+
 void LinearMPC::setStateConstraints(Ref<Mat_Ccx> Ccx, Ref<Vec_bcx> lbcx, Ref<Vec_bcx> ubcx) {
     for (size_t k = 0; k < HORIZON; k++) {
         Ccx_vec[k] = Ccx;
@@ -106,6 +115,10 @@ void LinearMPC::setStateConstraints(Ref<Mat_Ccx> Ccx, Ref<Vec_bcx> lbcx, Ref<Vec
     lbcx_vec[k] = lbcx;
     ubcx_vec[k] = ubcx;
 }
+
+#endif
+
+#ifdef WITH_INPUT_CONSTRAINTS
 
 void LinearMPC::setInputConstraints(Ref<Mat_Ccu> Ccu, Ref<Vec_bcu> lbcu, Ref<Vec_bcu> ubcu) {
     for (size_t k = 0; k < HORIZON; k++) {
@@ -124,6 +137,10 @@ void LinearMPC::setInputConstraints(Ref<Mat_Ccu> Ccu, Ref<Vec_bcu> lbcu, Ref<Vec
     ubcu_vec[k] = ubcu;
 }
 
+#endif
+
+#ifdef WITH_INPUT_BOUNDS
+
 void LinearMPC::setInputBounds(Ref<Vec_U_Bounds> lb, Ref<Vec_U_Bounds> ub) {
     for (size_t k = 0; k < HORIZON; k++) {
         lb_vec[k] = lb;
@@ -138,6 +155,8 @@ void LinearMPC::setInputBounds(Ref<Vec_U_Bounds> lb, Ref<Vec_U_Bounds> ub, size_
     lb_vec[k] = lb;
     ub_vec[k] = ub;
 }
+
+#endif
 
 void LinearMPC::setWeightMatrix(Ref<Mat_Qx> Qx, Ref<Mat_Ru> Ru) {
     for (size_t i = 0; i < HORIZON; i++) {
@@ -214,7 +233,7 @@ void LinearMPC::computeSxSu() {
             Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k];
             Su.topLeftCorner<Ak_ROWS, Bk_COLS>() = Bk_vec[k];
         } else {
-            Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k] * Sx.middleRows((k-1) * Ak_ROWS, Ak_ROWS);
+            Sx.middleRows(k * Ak_ROWS, Ak_ROWS) = Ak_vec[k] * Sx.middleRows((k - 1) * Ak_ROWS, Ak_ROWS);
             Su.block(k * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS)
                     = Ak_vec[k] * (Su.block((k - 1) * Ak_ROWS, 0, Ak_ROWS, k * Bk_COLS));
             Su.block<Ak_ROWS, Bk_COLS>(k * Ak_ROWS, k * Bk_COLS) = Bk_vec[k];
@@ -223,26 +242,32 @@ void LinearMPC::computeSxSu() {
 }
 
 void LinearMPC::computeCxbx() {
+#ifdef WITH_STATE_CONSTRAINTS
     for (int k = 0; k < HORIZON; k++) {
         Cx.block<SC_ROWS, Ak_ROWS>(k * SC_ROWS, k * Ak_ROWS) = Ccx_vec[k];
         lbx.block<SC_ROWS, 1>(k * SC_ROWS, 0) = lbcx_vec[k];
         ubx.block<SC_ROWS, 1>(k * SC_ROWS, 0) = ubcx_vec[k];
     }
+#endif
 }
 
 void LinearMPC::computeCubu() {
+#ifdef WITH_INPUT_CONSTRAINTS
     for (int k = 0; k < HORIZON; k++) {
         Cu.block<UC_ROWS, Bk_COLS>(k * UC_ROWS, k * Bk_COLS) = Ccu_vec[k];
         lbu.block<UC_ROWS, 1>(k * UC_ROWS, 0) = lbcu_vec[k];
         ubu.block<UC_ROWS, 1>(k * UC_ROWS, 0) = ubcu_vec[k];
     }
+#endif
 }
 
 void LinearMPC::computelbub() {
+#ifdef WITH_INPUT_BOUNDS
     for (int k = 0; k < HORIZON; k++) {
         lb.block<Bk_COLS, 1>(k * Bk_COLS, 0) = lb_vec[k];
         ub.block<Bk_COLS, 1>(k * Bk_COLS, 0) = ub_vec[k];
     }
+#endif
 }
 
 void LinearMPC::computeQR() {
